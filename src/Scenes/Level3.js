@@ -1,6 +1,7 @@
 class Platformer3 extends Phaser.Scene {
-    constructor() {
+    constructor(lives) {
         super("platformerScene3");
+        this.lives = lives
     }
 
     init() {
@@ -11,7 +12,6 @@ class Platformer3 extends Phaser.Scene {
         this.JUMP_VELOCITY = -600;
         this.PARTICLE_VELOCITY = 50;
         this.SCALE = 2.0;
-        this.lives = 2;
         this.pause = false;
         this.jumpTick = 0;
         this.landTick = 0;

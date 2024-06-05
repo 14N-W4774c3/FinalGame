@@ -3,24 +3,27 @@ class Title extends Phaser.Scene {
         super("titleScene");
     }
     create (){
-        // LOOK UP HOW TO PROPERLY REFERENCE GAME DIMENSIONS
-        this.titleText = this.add.text(350, 200, "Oarim in the Depths", {
+        // Title Background
+        const backGround = this.add.image(600, 400, "titlePage");
+
+        // Title
+        this.titleText = this.add.text(500, 200, "Oarim in the Depths", {
             fontFamily: 'Arial', 
             fontSize: '24px', 
         });
 
-        // REPLACE WITH MODIFIED SPRITE - NINESLICE HAS YET TO DISPLAY
-        //this.buttonPlay = new NineSlice(200, 500, "buttonGraphic", 0, 128, 110, 64, 64);
-        //this.buttonCredits = new NineSlice(600, 500, "buttonGraphic", 0, 128, 110, 64, 64);
-        this.buttonPlay = this.add.sprite(220, 510, "buttonGraphic").setScale(1.75, 1);
-        this.buttonCredits = this.add.sprite(630, 510, "buttonGraphic").setScale(1.75, 1);
+        // Create Buttons
+        this.buttonPlay = this.add.sprite(370, 510, "buttonGraphic").setScale(1.75, 1);
+        this.buttonCredits = this.add.sprite(780, 510, "buttonGraphic").setScale(1.75, 1);
         this.buttonPlay.setInteractive();
         this.buttonCredits.setInteractive();
 
-        this.playText = this.add.text(200, 500, "Play");
-        this.creditsText = this.add.text(600, 500, "Credits");
+        // Button Text
+        this.playText = this.add.text(350, 500, "Play");
+        this.creditsText = this.add.text(750, 500, "Credits");
     }
     update (){
+        // Button Handlers
         this.buttonPlay.on('pointerdown', () => {
             this.scene.start("platformerScene1")
         });
@@ -36,6 +39,7 @@ class Credits extends Phaser.Scene {
     }
     init() {
         this.config = {
+            fontFamily: 'Arial',
             align: 'center',
         }
     }
@@ -51,7 +55,7 @@ class Credits extends Phaser.Scene {
         this.assistCredits = this.add.text(100, 250, "Built off base code from Jim Whitehead", this.config);
         this.animationCredits = this.add.text(100, 300, "Animated Tiles plugin by Niklas Berg (2018)", this.config);
         this.artCredits = this.add.text(100, 350, "Art assets from Kenney Assets", this.config);
-        this.soundCredits = this.add.text(100, 400, "Audio assets from Kenney Assets", this.config);
+        this.soundCredits = this.add.text(100, 400, "Audio assets from Kenney Assets Impact Audio Pack", this.config);
 
         //this.buttonReturn = this.add.nineslice(400, 550, "buttonGraphic");
         this.buttonReturn = this.add.sprite(400, 560, "buttonGraphic").setScale(1.75, 1);

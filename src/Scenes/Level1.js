@@ -6,24 +6,25 @@ class Platformer extends Phaser.Scene {
     init() {
         // variables and settings
         this.ACCELERATION = 250;
-        this.DRAG = 500;    // DRAG < ACCELERATION = icy slide
+        this.DRAG = 500;
         this.physics.world.gravity.y = 1500;
         this.JUMP_VELOCITY = -600;
         this.PARTICLE_VELOCITY = 50;
         this.SCALE = 2.0;
         this.lives = 2;
         this.pause = false;
+
+        // VFX Timers
         this.jumpTick = 0;
         this.landTick = 0;
         this.lifeTick = 0;
+
+        // Pickup Animation Timer
         this.heartBeat = 0;
     }
 
     preload(){
         this.load.scenePlugin('AnimatedTiles', './lib/AnimatedTiles.js', 'animatedTiles', 'animatedTiles');
-        this.load.setPath("./assets/");
-        this.load.spritesheet('spriteList', 'tilemap_packed.png', {frameWidth: 18, frameHeight: 18});
-        this.load.spritesheet('indusList', 'industrial_tilemap_packed.png', {frameWidth: 18, frameHeight: 18});
     }
 
     create() {
@@ -41,22 +42,22 @@ class Platformer extends Phaser.Scene {
         this.youWonText.visible = false;
 
         // Create Buttons
-        this.buttonYes = this.add.nineslice(-100, -100, "buttonGraphic");
-        this.buttonNo = this.add.nineslice(-100, -100, "buttonGraphic");
-        this.buttonRestart = this.add.nineslice(-100, -100, "buttonGraphic");
+        this.buttonYes = this.add.sprite(-100, -100, "buttonGraphic").setScale(1.75, 1);
+        this.buttonNo = this.add.sprite(-100, -100, "buttonGraphic").setScale(1.75, 1);
+        this.buttonRestart = this.add.sprite(-100, -100, "buttonGraphic").setScale(1.75, 1);
         //this.buttonRestart.setSize(100, 50);
 
         // Create a new tilemap game object which uses 18x18 pixel tiles
         this.map = this.add.tilemap("platformer-level", 18, 18, 45, 20);
         
-        this.industiles = this.map.addTilesetImage("Industrial2", "tilemap_indus");
-        this.tileset = this.map.addTilesetImage("Neutral", "tilemap_tiles");
+        // REPLACE WITH ARRAY OF DEFINITIONS
+        this.tileset = [this.map.addTilesetImage("Industrial2", "tilemap_indus"), this.map.addTilesetImage("Neutral", "tilemap_tiles")];
 
         // Create a layer
         this.background = this.map.createLayer("Background", this.tileset, 0, 0);
-        this.indusBackground = this.map.createLayer("Indus-Background", this.industiles, 0, 0);
-        this.acid = this.map.createLayer("Acid", this.industiles, 0, 0);
-        this.indusGround = this.map.createLayer("Indus-Ground", this.industiles, 0, 0);
+        this.indusBackground = this.map.createLayer("Indus-Background", this.tileset, 0, 0);
+        this.acid = this.map.createLayer("Acid", this.tileset, 0, 0);
+        this.indusGround = this.map.createLayer("Indus-Ground", this.tileset, 0, 0);
         this.groundLayer = this.map.createLayer("Natural-Ground", this.tileset, 0, 0);
         
         this.physics.world.setBounds(0, 0, game.width, game.height, true, true, true, false);
@@ -85,28 +86,6 @@ class Platformer extends Phaser.Scene {
             frame: 44
         });
 
-        /*
-        this.acidkillzone = this.map.createFromObjects("Objects", {
-            name: "acidkillzone",
-            classType: Phaser.GameObjects.Zone,
-        });
-        this.smallacidkillzone = this.map.createFromObjects("Objects", {
-            name: "smallacidkillzone",
-            classType: Phaser.GameObjects.Zone,
-        });
-        this.physics.world.enable(this.acidkillzone, Phaser.Physics.Arcade.STATIC_BODY);
-        this.physics.world.enable(this.smallacidkillzone, Phaser.Physics.Arcade.STATIC_BODY);
-        */
-        // ...This formatting is used in the Phaser docs.  Why doesn't it work?!
-        // The claimed error is 'sprite.setTexture is not a function' off of this.map.createFromObjects(...)
-        // Why is it calling 'sprite' anything?  These are specified as Zones!
-        // newdocs.phaser.io/3.80.0/Phaser.Tilemaps.Tilemap#createFromObjects
-        this.smallAcidTL = this.map.findObject("Objects", obj => obj.name === "smallkillTL");
-        this.smallAcidBR = this.map.findObject("Objects", obj => obj.name === "smallkillBR");
-        this.smallAcidKillZone = this.add.zone(this.smallAcidTL.x, this.smallAcidTL.y).setSize(this.smallAcidBR.x - this.smallAcidTL.x, this.smallAcidBR.y - this.smallAcidTL.y);
-        this.largeAcidTL = this.map.findObject("Objects", obj => obj.name === "largekillTL");
-        this.largeAcidBR = this.map.findObject("Objects", obj => obj.name === "largekillBR");
-        this.largeAcidKillZone = this.add.zone(this.largeAcidTL.x, this.largeAcidTL.y).setSize(this.largeAcidBR.x - this.largeAcidTL.x, this.largeAcidBR.y - this.largeAcidTL.y);
         this.physics.world.enable(this.hearts, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.endPoint, Phaser.Physics.Arcade.STATIC_BODY);
         this.heartGroup = this.add.group(this.hearts);
@@ -176,15 +155,6 @@ class Platformer extends Phaser.Scene {
             this.lives ++;
         });
 
-        this.physics.add.overlap(my.sprite.player, this.smallAcidKillZone, (obj1, obj2) => {
-            console.log("Acid collision, small");
-            this.loseLife();
-        });
-        this.physics.add.overlap(my.sprite.player, this.largeAcidKillZone, (obj1, obj2) => {
-            console.log("Acid collision, large");
-            this.loseLife();
-        });
-
         this.physics.add.overlap(my.sprite.player, this.endPoint, (obj1, obj2) => {
             this.winGame();
         });
@@ -252,7 +222,6 @@ class Platformer extends Phaser.Scene {
             }
 
             // Heart Animation
-            // Technically not an animation code-wise, but 
             this.heartBeat++;
             if(this.heartBeat%120==0){
                 for(let heart of this.hearts){
@@ -319,7 +288,7 @@ class Platformer extends Phaser.Scene {
             }
         }
         // Button Interactions
-        // Only onscreen while game is paused, so can't be in the unpaused code.
+        // OUTDATED - REVISE
         this.buttonYes.on('pointerdown', () => {
             this.buttonYes.setPosition(-100, -100);
             this.buttonNo.setPosition(-100, -100);
@@ -370,7 +339,6 @@ class Platformer extends Phaser.Scene {
         this.buttonNo.setInteractive();
     }
     // Function for completing the level
-    // Button functions, but doesn't display?  Odd.
     winGame(){
         this.pause = true;
         this.youWonText.setX(this.cameras.main.worldView.x + 350);
