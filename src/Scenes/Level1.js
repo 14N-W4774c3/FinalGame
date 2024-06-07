@@ -63,10 +63,10 @@ class Platformer extends Phaser.Scene {
         ];
 
         // Create a layer
-        this.pipes = this.map.createLayer("Pipes", this.tileset, 0, 0);
+        this.pipes = this.map.createLayer("Pipes", this.tileset, 0, 0).setScrollFactor(0.5);
         this.background = this.map.createLayer("Background", this.tileset, 0, 0);
-        this.farTrees = this.map.createLayer("Trees-Far", this.tileset, 0, 0);
-        this.closeTrees = this.map.createLayer("Trees-Close", this.tileset, 0, 0);
+        this.farTrees = this.map.createLayer("Trees-Far", this.tileset, 0, 0).setScrollFactor(0.25);
+        this.closeTrees = this.map.createLayer("Trees-Close", this.tileset, 0, 0).setScrollFactor(0.5);
         this.acid = this.map.createLayer("Acid", this.tileset, 0, 0);
         this.groundLayer = this.map.createLayer("Ground", this.tileset, 0, 0);
         
@@ -183,21 +183,6 @@ class Platformer extends Phaser.Scene {
         this.resetCamera();
 
         this.animatedTiles.init(this.map);
-
-        /*
-        // EC3-1 - Coin Animation
-        this.anims.create({
-            key:'coin',
-            frames: this.anims.generateFrameNumbers('spriteList', {start: 151, end: 152}),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        // EC3-2 - Coin Animation Implementation
-        for (let coin of this.coins){
-            coin.play("coin");
-        }
-        */
     }
 
     update() {
@@ -297,21 +282,16 @@ class Platformer extends Phaser.Scene {
                 this.scene.restart();
             }
         }
+
         // Button Interactions
-        // OUTDATED - REVISE
         this.buttonYes.on('pointerdown', () => {
-            this.buttonYes.setPosition(-100, -100);
-            this.buttonNo.setPosition(-100, -100);
-            this.init_game();
+            this.scene.restart();
         });
         this.buttonNo.on('pointerdown', () => {
-            this.buttonYes.setPosition(-100, -100);
-            this.buttonNo.setPosition(-100,-100);
-            this.gameOver();
+            this.scene.start("titleScene");
         });
-        this.buttonRestart.on('pointerdown', () => {
-            this.buttonRestart.setPosition(-100, -100);
-            this.scene.restart();
+        this.buttonContinue.on('pointerdown', () => {
+            this.scene.start("platformerScene2");
         });
     }
 
@@ -325,41 +305,24 @@ class Platformer extends Phaser.Scene {
         return;
     }
     // Function for game overs
-    // Probably doesn't work (due to using same code as End Game), 
-    // but untestable due to lack of working means to lose lives
     gameOver(){
         this.pause = true;
-        this.gameOverText.setX(this.cameras.main.worldView.x + 300);
-        this.gameOverText.setDepth(10);
         this.gameOverText.visible = true;
-        this.continueText.setX(this.cameras.main.worldView.x + 300);
-        this.continueText.setDepth(10);
-        this.coninueText.visible = true;
-        this.yesText.setX(this.cameras.main.worldView.x + 200);
-        this.yesText.setDepth(11);
+        this.continueText.visible = true;
         this.yesText.visible = true;
-        this.buttonYes.setPosition(this.cameras.main.worldView.x + 200, 500);
-        this.buttonYes.setDepth(10);
+        this.buttonYes.visible = true;
         this.buttonYes.setInteractive();
-        this.noText.setX(this.cameras.main.worldView.x + 400);
-        this.noText.setDepth(11);
         this.noText.visible = true;
-        this.buttonNo.setPosition(this.cameras.main.worldView.x + 400, 500);
-        this.buttonNo.setDepth(10);
+        this.buttonNo.visible = true;
         this.buttonNo.setInteractive();
     }
     // Function for completing the level
     winGame(){
         this.pause = true;
-        this.youWonText.setX(this.cameras.main.worldView.x + 350);
-        this.youWonText.setDepth(10);
-        this.youWonText.visible = true;
-        this.restartText.setX(this.cameras.main.worldView.x + 350);
-        this.restartText.setDepth(12);
-        this.restartText.visible = true;
-        this.buttonRestart.setPosition(this.cameras.main.worldView.x + 350, 200);
-        this.buttonRestart.setDepth(11);
-        this.buttonRestart.setInteractive();
+        this.clearText.visible = true;
+        this.nextLevelText.visible = true;
+        this.buttonContinue.visible = true;
+        this.buttonContinue.setInteractive();
     }
     // Function for killing the player
     loseLife(){

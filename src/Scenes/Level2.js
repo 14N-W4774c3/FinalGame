@@ -21,6 +21,10 @@ class Platformer2 extends Phaser.Scene {
 
         // Pickup Animation Timer
         this.heartBeat = 0;
+
+        // Layer Movement Timers
+        this.platformTick = -1;
+        this.barrierTick = -1;
     }
 
     preload(){
@@ -54,7 +58,7 @@ class Platformer2 extends Phaser.Scene {
         this.nextLevelText.visible = false;
 
         // Create a new tilemap game object which uses 18x18 pixel tiles
-        this.map = this.add.tilemap("platformer-level", 18, 18, 45, 20);
+        this.map = this.add.tilemap("platformer-level2", 18, 18, 45, 20);
         
         // Load Tilesets
         this.tileset = [
@@ -67,7 +71,7 @@ class Platformer2 extends Phaser.Scene {
 
         // Create map layers
         this.caverns = this.map.createLayer("Caverns", this.tileset, 0, 0);
-        this.pipes = this.map.createLayer("Piping", this.tileset, 0, 0);
+        this.pipes = this.map.createLayer("Piping", this.tileset, 0, 0).setScrollFactor(1, 0.5);
         this.background = this.map.createLayer("Background", this.tileset, 0, 0);
         this.platforms = this.map.createLayer("Platforms", this.tileset, 0, 0);
         this.barrier = this.map.createLayer("Barrier", this.tileset, 0, 0);
@@ -190,14 +194,151 @@ class Platformer2 extends Phaser.Scene {
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
-
+        this.spaceKey = this.input.keyboard.addKey('SPACE');
         this.rKey = this.input.keyboard.addKey('R');
 
         this.resetCamera();
 
         this.animatedTiles.init(this.map);
     }
-    update() {}
+    update() {
+        if (this.pause == false){
+            // Check Lives
+            if (this.lives == 0){
+                this.gameOver();
+            }
+            
+            // Particle Tracking
+            if(this.jumpTick > 0){
+                this.jumpTick--;
+                if(this.jumptick == 0){
+                    this.jumpVFX.stop();
+                }
+            }
+            if(this.landTick > 0){
+                this.landTick--;
+                if(this.landTick == 0){
+                    this.landVFX.stop();
+                }
+            }
+            if(this.lifeTick > 0){
+                this.lifeTick--;
+                if(this.lifeTick == 0){
+                    this.lifeVFX.stop();
+                }
+            }
+
+            // Heart Animation
+            this.heartBeat++;
+            if(this.heartBeat%120==0){
+                for(let heart of this.hearts){
+                    if (heart.scale == 1){
+                        heart.scale = 1.5;
+                    }
+                }
+            }
+            if((this.heartBeat+110)%120==0){
+                for(let heart of this.hearts){
+                    if (heart.scale == 1.5){
+                        heart.scale = 1;
+                    }
+                }
+            }
+
+            /* Layer Movement - Level 2
+             Upon elevator lever being pulled, the platform starts lowering
+             A few seconds later, it speeds up and the roof starts dropping
+             A few seconds after that, it is destroyed and the roof drops faster
+             Upon the barrier lever being pulled, the barrier slowly opens
+            */
+            if (this.platformTick >= 0){
+                this.platformTick++;
+                if (this.platformTick % 10 == 0){
+                    this.platform.Y += 3;
+                }
+                if (this.platformTick > 180 && this.platformTick % 10 == 0){
+                    this.platform.Y += 3;
+                    this.roof.Y += 3;
+                }
+                if (this.platformTick = 360){
+                    this.platform.destroy();
+                }
+                if (this.platformTick > 360 && this.platformTick % 10){
+                    this.roof.Y += 3;
+                }
+            }
+            if (this.barrierTick >= 0){
+                this.barrierTick++;
+                if (this.barrierTick % 5 == 0){
+                    this.barrier.X += 3;
+                }
+                if (this.barrierTick == 180){
+                    this.barrierTick = -1;
+                }
+            }
+
+            // Player Movement
+            if(cursors.left.isDown) {
+                my.sprite.player.setAccelerationX(-this.ACCELERATION);
+                my.sprite.player.resetFlip();
+                my.sprite.player.anims.play('walk', true);
+                this.walkVFX.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                this.walkVFX.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+                // Only play smoke effect if touching the ground
+                if (my.sprite.player.body.blocked.down) {
+                    this.walkVFX.start();
+                }
+            } else if(cursors.right.isDown) {
+                my.sprite.player.setAccelerationX(this.ACCELERATION);
+                my.sprite.player.setFlip(true, false);
+                my.sprite.player.anims.play('walk', true);
+                this.walkVFX.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                this.walkVFX.setParticleSpeed(-this.PARTICLE_VELOCITY, 0);
+                // Only play smoke effect if touching the ground
+                if (my.sprite.player.body.blocked.down) {
+                    this.walkVFX.start();
+                }
+            } else {
+                // Set acceleration to 0 and have DRAG take over
+                my.sprite.player.setAccelerationX(0);
+                my.sprite.player.setDragX(this.DRAG);
+                my.sprite.player.anims.play('idle');
+                this.walkVFX.stop();
+            }
+    
+            // player jump
+            // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
+            if(!my.sprite.player.body.blocked.down) {
+                my.sprite.player.anims.play('jump');
+            }
+            if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+                if (this.jumpboost){
+                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY*1.5);
+                }
+                else {
+                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+                    this.jumpVFX.start();
+                    this.jumpTick = 5;
+                }
+            }
+            
+            // Maunal Restart - REMOVE FOR FINAL VERSION
+            if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
+                this.scene.restart();
+            }
+        }
+
+        // Button Interactions
+        this.buttonYes.on('pointerdown', () => {
+            this.scene.restart();
+        });
+        this.buttonNo.on('pointerdown', () => {
+            this.scene.start("titleScene");
+        });
+        this.buttonContinue.on('pointerdown', () => {
+            this.scene.start("platformerScene3");
+        });
+    }
 
     // Function for game overs
     gameOver(){
@@ -214,15 +355,10 @@ class Platformer2 extends Phaser.Scene {
     // Function for completing the level
     winGame(){
         this.pause = true;
-        this.youWonText.setX(this.cameras.main.worldView.x + 350);
-        this.youWonText.setDepth(10);
-        this.youWonText.visible = true;
-        this.restartText.setX(this.cameras.main.worldView.x + 350);
-        this.restartText.setDepth(12);
-        this.restartText.visible = true;
-        this.buttonRestart.setPosition(this.cameras.main.worldView.x + 350, 200);
-        this.buttonRestart.setDepth(11);
-        this.buttonRestart.setInteractive();
+        this.clearText.visible = true;
+        this.nextLevelText.visible = true;
+        this.buttonContinue.visible = true;
+        this.buttonContinue.setInteractive();
     }
     // Function for killing the player
     loseLife(){

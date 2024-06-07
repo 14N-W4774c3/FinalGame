@@ -18,6 +18,8 @@ class Load extends Phaser.Scene {
         this.load.image("tilemap_rock", "stone_packed.png");
         this.load.image("tilemap_sand", "sand_packed.png");
         this.load.tilemapTiledJSON("platformer-level", "platformer-level.tmj");
+        this.load.tilemapTiledJSON("platformer-level2", "platformer-level2.tmj");
+        this.load.tilemapTiledJSON("platformer-level3", "platformer-level3.tmj");
 
         // Load Particles
         this.load.multiatlas("kenny-particles", "kenny-particles.json");
@@ -63,6 +65,13 @@ class Load extends Phaser.Scene {
             frames: [
                 { frame: "tile_0001.png" }
             ],
+        });
+
+        this.anims.create({
+            key: 'lever',
+            frames: this.anims.generateFrameNumbers('spriteList', {start: 66, end: 64}),
+            frameRate: 8,
+            repeat: 0
         });
 
          // ...and pass to the next Scene
