@@ -12,6 +12,11 @@ class Load extends Phaser.Scene {
         // Load tilemap information
         this.load.image("tilemap_tiles", "tilemap_packed.png");
         this.load.image("tilemap_indus", "industrial_tilemap_packed.png");
+        this.load.image("tilemap_food", "food_tilemap_packed.png");
+        this.load.image("tilemap_marble", "marble_packed.png");
+        this.load.image("tilemap_stone", "rock_packed.png");
+        this.load.image("tilemap_rock", "stone_packed.png");
+        this.load.image("tilemap_sand", "sand_packed.png");
         this.load.tilemapTiledJSON("platformer-level", "platformer-level.tmj");
 
         // Load Particles

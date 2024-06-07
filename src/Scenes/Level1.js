@@ -28,37 +28,47 @@ class Platformer extends Phaser.Scene {
     }
 
     create() {
-        this.gameOverText = this.add.text(-200, 200, "Game Over", {align: 'center'});
-        this.continueText = this.add.text(-200, 250, "Do You Want To Continue?", {align: 'center'});
-        this.yesText = this.add.text(-200, 400, "Yes", {align: 'center'});
-        this.noText = this.add.text(-400, 400, "No", {align: 'center'});
-        this.restartText = this.add.text(400, 200, "Restart", {align: 'center'});
-        this.youWonText = this.add.text(400, 150, "You Won!", {align: 'center'});
+        // Create Buttons
+        this.buttonYes = this.add.sprite(370, 500, "buttonGraphic").setScale(1.75, 1);
+        this.buttonNo = this.add.sprite(780, 500, "buttonGraphic").setScale(1.75, 1);
+        this.buttonContinue = this.add.sprite(500, 500, "buttonGraphic").setScale(1.75, 1);
+        this.buttonYes.setScrollFactor(0);
+        this.buttonNo.setScrollFactor(0);
+        this.buttonContinue.setScrollFactor(0);
+        this.buttonYes.visible = false;
+        this.buttonNo.visible = false;
+        this.buttonContinue.visible = false;
+
+        // Create Text
+        this.gameOverText = this.add.text(500, 200, "Game Over").setScrollFactor(0);
+        this.continueText = this.add.text(500, 250, "Do You Want To Continue?").setScrollFactor(0);
+        this.yesText = this.add.text(350, 500, "Yes").setScrollFactor(0);
+        this.noText = this.add.text(750, 500, "No").setScrollFactor(0);
+        this.clearText = this.add.text(500, 200, "Oarim cleared Level 1").setScrollFactor(0);
+        this.nextLevelText = this.add.text(500, 500, "Level 2").setScrollFactor(0);
         this.gameOverText.visible = false;
         this.continueText.visible = false;
         this.yesText.visible = false;
         this.noText.visible = false;
-        this.restartText.visible = false;
-        this.youWonText.visible = false;
-
-        // Create Buttons
-        this.buttonYes = this.add.sprite(-100, -100, "buttonGraphic").setScale(1.75, 1);
-        this.buttonNo = this.add.sprite(-100, -100, "buttonGraphic").setScale(1.75, 1);
-        this.buttonRestart = this.add.sprite(-100, -100, "buttonGraphic").setScale(1.75, 1);
-        //this.buttonRestart.setSize(100, 50);
+        this.clearText.visible = false;
+        this.nextLevelText.visible = false;
 
         // Create a new tilemap game object which uses 18x18 pixel tiles
         this.map = this.add.tilemap("platformer-level", 18, 18, 45, 20);
         
-        // REPLACE WITH ARRAY OF DEFINITIONS
-        this.tileset = [this.map.addTilesetImage("Industrial2", "tilemap_indus"), this.map.addTilesetImage("Neutral", "tilemap_tiles")];
+        // Load Tilesets
+        this.tileset = [
+            this.map.addTilesetImage("Industrial", "tilemap_indus"), 
+            this.map.addTilesetImage("Neutral", "tilemap_tiles")
+        ];
 
         // Create a layer
+        this.pipes = this.map.createLayer("Pipes", this.tileset, 0, 0);
         this.background = this.map.createLayer("Background", this.tileset, 0, 0);
-        this.indusBackground = this.map.createLayer("Indus-Background", this.tileset, 0, 0);
+        this.farTrees = this.map.createLayer("Trees-Far", this.tileset, 0, 0);
+        this.closeTrees = this.map.createLayer("Trees-Close", this.tileset, 0, 0);
         this.acid = this.map.createLayer("Acid", this.tileset, 0, 0);
-        this.indusGround = this.map.createLayer("Indus-Ground", this.tileset, 0, 0);
-        this.groundLayer = this.map.createLayer("Natural-Ground", this.tileset, 0, 0);
+        this.groundLayer = this.map.createLayer("Ground", this.tileset, 0, 0);
         
         this.physics.world.setBounds(0, 0, game.width, game.height, true, true, true, false);
 
@@ -66,14 +76,11 @@ class Platformer extends Phaser.Scene {
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
-        this.indusGround.setCollisionByProperty({
-            collides: true
-        });
         this.acid.setCollisionByProperty({
             acid: true
         });
 
-        // Create Objects
+        // Set spawn point and end point
         this.spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
         this.endPoint = this.map.createFromObjects("Objects", {
             name: "endpoint",
@@ -86,6 +93,7 @@ class Platformer extends Phaser.Scene {
             frame: 44
         });
 
+        // Enable object collisions
         this.physics.world.enable(this.hearts, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.endPoint, Phaser.Physics.Arcade.STATIC_BODY);
         this.heartGroup = this.add.group(this.hearts);
@@ -142,9 +150,9 @@ class Platformer extends Phaser.Scene {
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
-        this.physics.add.collider(my.sprite.player, this.indusGround);
         //this.physics.add.collider(true, my.sprite.player, this.acid, this.loseLife());
 
+        // Heart Collision Implementation
         this.physics.add.overlap(my.sprite.player, this.heartGroup, (obj1, obj2) => {
             this.lifeVFX.setX(obj2.x);
             this.lifeVFX.setY(obj2.y);
@@ -155,6 +163,7 @@ class Platformer extends Phaser.Scene {
             this.lives ++;
         });
 
+        // Level End Condition
         this.physics.add.overlap(my.sprite.player, this.endPoint, (obj1, obj2) => {
             this.winGame();
         });
@@ -165,6 +174,7 @@ class Platformer extends Phaser.Scene {
         this.rKey = this.input.keyboard.addKey('R');
 
         // debug key listener (assigned to D key)
+        // Remove in final version
         this.input.keyboard.on('keydown-D', () => {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
