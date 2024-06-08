@@ -112,9 +112,23 @@ class Platformer2 extends Phaser.Scene {
             frame: 44
         });
 
+        // Create Levers
+        this.leverPlatform = this.map.createFromObjects("Objects", {
+            name: "levertop",
+            key: "spriteList",
+            frame: 66
+        });
+        this.leverBarrier = this.map.createFromObjects("Objects", {
+            name: "levermid",
+            key: "spriteList",
+            frame: 66
+        });
+
         // Enable object collisions
         this.physics.world.enable(this.hearts, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.endPoint, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.leverPlatform, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.leverBarrier, Phaser.Physics.Arcade.STATIC_BODY);
         this.heartGroup = this.add.group(this.hearts);
 
         // Particle VFX
@@ -208,6 +222,13 @@ class Platformer2 extends Phaser.Scene {
                 this.gameOver();
             }
             
+            // Death Checks
+            // Crushing
+            if (my.sprite.player.body.blocked.up && my.sprite.player.body.blocked.down){
+                this.loseLife();
+            }
+            // Acid
+
             // Particle Tracking
             if(this.jumpTick > 0){
                 this.jumpTick--;
@@ -227,6 +248,14 @@ class Platformer2 extends Phaser.Scene {
                     this.lifeVFX.stop();
                 }
             }
+
+            // Lever Animation Handler
+            this.leverBarrier.on(Phaser.Animations.Events.Animation_Complete, () => {
+                this.barrierTick = 0;
+            });
+            this.leverPlatform.on(Phaser.Animations.Events.Animation_Complete, () => {
+                this.platformTick = 0;
+            });
 
             // Heart Animation
             this.heartBeat++;
@@ -254,14 +283,14 @@ class Platformer2 extends Phaser.Scene {
             if (this.platformTick >= 0){
                 this.platformTick++;
                 if (this.platformTick % 10 == 0){
-                    this.platform.Y += 3;
+                    this.platforms.Y += 3;
                 }
                 if (this.platformTick > 180 && this.platformTick % 10 == 0){
-                    this.platform.Y += 3;
+                    this.platforms.Y += 3;
                     this.roof.Y += 3;
                 }
                 if (this.platformTick = 360){
-                    this.platform.destroy();
+                    this.platforms.destroy();
                 }
                 if (this.platformTick > 360 && this.platformTick % 10){
                     this.roof.Y += 3;
@@ -322,6 +351,17 @@ class Platformer2 extends Phaser.Scene {
                 }
             }
             
+            // Object Interaction
+            if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
+                if (!this.barrierLeverActive && this.leverBarrier.body.touching){// INSERT OVERLAP CHECK HERE
+                    this.barrierLeverActive = true;
+                    this.leverBarrier.play("lever");
+                }
+                if (!this.platformLeverActive && this.leverPlatform.body.touching){
+                    this.platformLeverActive = true;
+                    this.leverPlatform.play("lever");
+                }
+            }
             // Maunal Restart - REMOVE FOR FINAL VERSION
             if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
                 this.scene.restart();
@@ -366,6 +406,14 @@ class Platformer2 extends Phaser.Scene {
         console.log("Killed Player");
         this.lives--;
         console.log("Lives remaining: "+this.lives);
+        this.roof.Y = 0;
+        this.barrier.Y = 0;
+        if (!this.platforms){
+            this.platforms = this.map.createLayer("Platforms", this.tileset, 0, 0);
+        }
+        else {
+            this.platforms.Y = 0;
+        }
         my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
         my.sprite.player.setCollideWorldBounds(true);
         console.log("Player spawned at "+ my.sprite.player.x +", "+ my.sprite.player.x);
