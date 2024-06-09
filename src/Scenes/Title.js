@@ -53,11 +53,11 @@ class Credits extends Phaser.Scene {
         // Text alignment only applies to MULTI-LINE text; revise so all are one object
         this.programCredits = this.add.text(100, 200, "Programming by Ian Wallace", this.config);
         this.assistCredits = this.add.text(100, 250, "Built off base code from Jim Whitehead", this.config);
-        this.animationCredits = this.add.text(100, 300, "Animated Tiles plugin by Niklas Berg (2018)", this.config);
-        this.artCredits = this.add.text(100, 350, "Art assets from Kenney Assets", this.config);
-        this.soundCredits = this.add.text(100, 400, "Audio assets from Kenney Assets Impact Audio Pack", this.config);
-
-        //this.buttonReturn = this.add.nineslice(400, 550, "buttonGraphic");
+        this.acidAssist = this.add.text(100, 300, "and acid code from Akira Shemansky (2024)", this.config);
+        this.animationCredits = this.add.text(100, 350, "Animated Tiles plugin by Niklas Berg (2018)", this.config);
+        this.artCredits = this.add.text(100, 400, "Art assets from Kenney Assets", this.config);
+        this.soundCredits = this.add.text(100, 450, "Audio assets from Kenney Assets Impact Audio Pack", this.config);
+        
         this.buttonReturn = this.add.sprite(400, 560, "buttonGraphic").setScale(1.75, 1);
         this.buttonReturn.setInteractive();
 
