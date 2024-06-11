@@ -305,15 +305,6 @@ class Platformer extends Phaser.Scene {
         });
     }
 
-    // Function for setting up the Level
-    init_game(){
-        this.lives = 2;
-        // Text Displays
-
-        my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
-        my.sprite.player.setCollideWorldBounds(true);
-        return;
-    }
     // Function for game overs
     gameOver(){
         this.pause = true;

@@ -250,10 +250,10 @@ class Platformer2 extends Phaser.Scene {
             }
 
             // Lever Animation Handler
-            this.leverBarrier.on(Phaser.Animations.Events.Animation_Complete, () => {
+            this.leverBarrier.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                 this.barrierTick = 0;
             });
-            this.leverPlatform.on(Phaser.Animations.Events.Animation_Complete, () => {
+            this.leverPlatform.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                 this.platformTick = 0;
             });
 

@@ -423,6 +423,30 @@
                  "width":18,
                  "x":1188,
                  "y":93
+                }, 
+                {
+                 "gid":14,
+                 "height":47,
+                 "id":5,
+                 "name":"killzone",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":453,
+                 "x":341,
+                 "y":543
+                }, 
+                {
+                 "gid":14,
+                 "height":45,
+                 "id":6,
+                 "name":"killzone",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":455,
+                 "x":1491,
+                 "y":543
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -431,7 +455,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":5,
+ "nextobjectid":7,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="180" height="30" tilewidth="18" tileheight="18" infinite="0" nextlayerid="12" nextobjectid="5">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="180" height="30" tilewidth="18" tileheight="18" infinite="0" nextlayerid="12" nextobjectid="7">
  <tileset firstgid="1" name="Industrial" tilewidth="18" tileheight="18" tilecount="112" columns="16">
   <image source="industrial_tilemap_packed.png" width="288" height="126"/>
   <tile id="0">
@@ -939,5 +939,7 @@
   <object id="2" name="lever2" gid="260" x="2538" y="253" width="18" height="18"/>
   <object id="3" name="lever1" gid="260" x="2484" y="434" width="18" height="18"/>
   <object id="4" name="heart" gid="238" x="1188" y="93" width="18" height="18"/>
+  <object id="5" name="killzone" gid="14" x="341" y="543" width="453" height="47"/>
+  <object id="6" name="killzone" gid="14" x="1491" y="543" width="455" height="45"/>
  </objectgroup>
 </map>
