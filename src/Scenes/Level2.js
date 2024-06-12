@@ -190,6 +190,19 @@ class Platformer2 extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.platforms);
         this.physics.add.collider(my.sprite.player, this.roof);
 
+        // Acid Collision Implementation
+        this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
+            obj1.destroy();
+            this.lives -= 1;
+            if (this.lives > 0){
+                my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
+                my.sprite.player.setCollideWorldBounds(true);
+                this.resetCamera();
+                this.resetLayers();
+                this.resetCollision();
+            }
+        });
+
         // Heart Collision Implementation
         this.physics.add.overlap(my.sprite.player, this.heartGroup, (obj1, obj2) => {
             this.lifeVFX.setX(obj2.x);
@@ -248,14 +261,6 @@ class Platformer2 extends Phaser.Scene {
                     this.lifeVFX.stop();
                 }
             }
-
-            // Lever Animation Handler
-            this.leverBarrier.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                this.barrierTick = 0;
-            });
-            this.leverPlatform.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                this.platformTick = 0;
-            });
 
             // Heart Animation
             this.heartBeat++;
@@ -353,19 +358,21 @@ class Platformer2 extends Phaser.Scene {
             
             // Object Interaction
             if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
-                if (!this.barrierLeverActive && this.leverBarrier.body.touching){// INSERT OVERLAP CHECK HERE
+                if (!this.barrierLeverActive && this.leverBarrier.touching){// INSERT OVERLAP CHECK HERE
                     this.barrierLeverActive = true;
                     this.leverBarrier.play("lever");
+                    this.barrierTick = 0;
                 }
-                if (!this.platformLeverActive && this.leverPlatform.body.touching){
+                if (!this.platformLeverActive && this.leverPlatform.touching){
                     this.platformLeverActive = true;
                     this.leverPlatform.play("lever");
+                    this.platformTick = 0;
                 }
             }
             // Maunal Restart - REMOVE FOR FINAL VERSION
             if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
                 this.scene.restart();
-            }
+            }         
         }
 
         // Button Interactions
@@ -403,9 +410,7 @@ class Platformer2 extends Phaser.Scene {
     // Function for killing the player
     loseLife(){
         my.sprite.player.destroy();
-        console.log("Killed Player");
         this.lives--;
-        console.log("Lives remaining: "+this.lives);
         this.roof.Y = 0;
         this.barrier.Y = 0;
         if (!this.platforms){
@@ -427,5 +432,39 @@ class Platformer2 extends Phaser.Scene {
         this.cameras.main.setDeadzone(50, 50);
         this.cameras.main.setZoom(this.SCALE);
         return;
+    }
+    // Function for resetting collision
+    resetCollision(){
+        this.physics.add.collider(my.sprite.player, this.groundLayer);
+        this.physics.add.collider(my.sprite.player, this.barrier);
+        this.physics.add.collider(my.sprite.player, this.platforms);
+        this.physics.add.collider(my.sprite.player, this.roof);
+        this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
+            obj1.destroy();
+            this.lives -= 1;
+            if (this.lives > 0){
+                my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
+                my.sprite.player.setCollideWorldBounds(true);
+                this.resetCamera();
+                this.resetCollision();
+            }
+        });
+        this.physics.add.overlap(my.sprite.player, this.heartGroup, (obj1, obj2) => {
+            this.lifeVFX.setX(obj2.x);
+            this.lifeVFX.setY(obj2.y);
+            this.lifeVFX.start();
+            this.lifeTick = 20;
+            this.sound.play("powerup");
+            obj2.destroy();
+            this.lives ++;
+        });
+        this.physics.add.overlap(my.sprite.player, this.endPoint, (obj1, obj2) => {
+            this.winGame();
+        });
+    }
+    // Function for resetting moving layers
+    resetLayers(){
+        this.roof.Y = 0;
+        this.barrier.Y = 0;
     }
 }

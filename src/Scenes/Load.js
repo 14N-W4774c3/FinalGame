@@ -70,7 +70,7 @@ class Load extends Phaser.Scene {
         this.anims.create({
             key: 'lever',
             frames: this.anims.generateFrameNumbers('spriteList', {start: 66, end: 64}),
-            frameRate: 8,
+            frameRate: 2,
             repeat: 0
         });
 
