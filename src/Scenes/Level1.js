@@ -173,7 +173,6 @@ class Platformer extends Phaser.Scene {
         this.animatedTiles.init(this.map);
 
         // Create Buttons
-        // NOTE: Zoom changes values - revise
         this.buttonYes = this.add.sprite(515, 510, "buttonGraphic").setScale(1.75, 1);
         this.buttonNo = this.add.sprite(885, 510, "buttonGraphic").setScale(1.75, 1);
         this.buttonContinue = this.add.sprite(685, 510, "buttonGraphic").setScale(1.75, 1);
@@ -283,14 +282,9 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.anims.play('jump');
             }
             if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-                if (this.jumpboost){
-                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY*1.5);
-                }
-                else {
-                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
-                    this.jumpVFX.start();
-                    this.jumpTick = 5;
-                }
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+                this.jumpVFX.start();
+                this.jumpTick = 5;
             }
     
             if(Phaser.Input.Keyboard.JustDown(this.rKey)) {

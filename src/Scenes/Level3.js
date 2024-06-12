@@ -1,7 +1,6 @@
 class Platformer3 extends Phaser.Scene {
-    constructor(lives) {
+    constructor() {
         super("platformerScene3");
-        this.lives = lives
     }
 
     init() {
@@ -13,6 +12,9 @@ class Platformer3 extends Phaser.Scene {
         this.PARTICLE_VELOCITY = 50;
         this.SCALE = 2.0;
         this.pause = false;
+        if (!this.lives){
+            this.lives = 2;
+        }
 
         // VFX Timers
         this.jumpTick = 0;
@@ -21,6 +23,14 @@ class Platformer3 extends Phaser.Scene {
 
         // Pickup Animation Timer
         this.heartBeat = 0;
+
+        // Lever Trackers
+        this.lever1active = false;
+        this.lever2active = false;
+
+        // Lever Timers
+        this.barrier1tick = -1;
+        this.barrier2tick = -1;
     }
 
     preload(){
@@ -28,31 +38,6 @@ class Platformer3 extends Phaser.Scene {
     }
 
     create() {
-        // Create Buttons
-        this.buttonYes = this.add.sprite(370, 500, "buttonGraphic").setScale(1.75, 1);
-        this.buttonNo = this.add.sprite(780, 500, "buttonGraphic").setScale(1.75, 1);
-        this.buttonContinue = this.add.sprite(500, 500, "buttonGraphic").setScale(1.75, 1);
-        this.buttonYes.setScrollFactor(0);
-        this.buttonNo.setScrollFactor(0);
-        this.buttonContinue.setScrollFactor(0);
-        this.buttonYes.visible = false;
-        this.buttonNo.visible = false;
-        this.buttonContinue.visible = false;
-
-        // Create Text
-        this.gameOverText = this.add.text(500, 200, "Game Over").setScrollFactor(0);
-        this.continueText = this.add.text(500, 250, "Do You Want To Continue?").setScrollFactor(0);
-        this.yesText = this.add.text(350, 500, "Yes").setScrollFactor(0);
-        this.noText = this.add.text(750, 500, "No").setScrollFactor(0);
-        this.clearText = this.add.text(500, 200, "Congratulations!").setScrollFactor(0);
-        this.nextLevelText = this.add.text(500, 500, "Credits").setScrollFactor(0);
-        this.gameOverText.visible = false;
-        this.continueText.visible = false;
-        this.yesText.visible = false;
-        this.noText.visible = false;
-        this.clearText.visible = false;
-        this.nextLevelText.visible = false;
-
         // Create a new tilemap game object which uses 18x18 pixel tiles
         this.map = this.add.tilemap("platformer-level3", 18, 18, 45, 20);
         
@@ -95,7 +80,6 @@ class Platformer3 extends Phaser.Scene {
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
-        // ACID IMPLEMENTATION
 
         // Set spawn point
         this.spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
@@ -157,8 +141,21 @@ class Platformer3 extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(my.sprite.player, this.barrier2);
         this.physics.add.collider(my.sprite.player, this.barrier1);
-        this.physics.add.collider(my.sprite.player, this.plunger);
+        this.physics.add.collider(my.sprite.player, this.plunger, (obj1, obj2) => {
+            this.winGame();
+        });
         this.physics.add.collider(my.sprite.player, this.cage);
+        this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
+            obj1.destroy();
+            this.lives -= 1;
+            if (this.lives > 0){
+                my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
+                my.sprite.player.setCollideWorldBounds(true);
+                this.resetCamera();
+                this.resetCollision();
+                this.resetLayers();
+            }
+        });
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -168,6 +165,31 @@ class Platformer3 extends Phaser.Scene {
         this.resetCamera();
 
         this.animatedTiles.init(this.map);
+
+        // Create Buttons
+        this.buttonYes = this.add.sprite(515, 510, "buttonGraphic").setScale(1.75, 1);
+        this.buttonNo = this.add.sprite(885, 510, "buttonGraphic").setScale(1.75, 1);
+        this.buttonContinue = this.add.sprite(685, 510, "buttonGraphic").setScale(1.75, 1);
+        this.buttonYes.setScrollFactor(0);
+        this.buttonNo.setScrollFactor(0);
+        this.buttonContinue.setScrollFactor(0);
+        this.buttonYes.visible = false;
+        this.buttonNo.visible = false;
+        this.buttonContinue.visible = false;
+
+        // Create Text
+        this.gameOverText = this.add.text(600, 300, "Game Over").setScrollFactor(0);
+        this.continueText = this.add.text(600, 350, "Do You Want To Continue?").setScrollFactor(0);
+        this.yesText = this.add.text(500, 500, "Yes").setScrollFactor(0);
+        this.noText = this.add.text(870, 500, "No").setScrollFactor(0);
+        this.clearText = this.add.text(600, 300, "Congratulations!").setScrollFactor(0);
+        this.nextLevelText = this.add.text(650, 500, "Credits").setScrollFactor(0);
+        this.gameOverText.visible = false;
+        this.continueText.visible = false;
+        this.yesText.visible = false;
+        this.noText.visible = false;
+        this.clearText.visible = false;
+        this.nextLevelText.visible = false;
     }
     update() {
         if (this.pause == false){
@@ -248,13 +270,22 @@ class Platformer3 extends Phaser.Scene {
                 my.sprite.player.anims.play('jump');
             }
             if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-                if (this.jumpboost){
-                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY*1.5);
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+                this.jumpVFX.start();
+                this.jumpTick = 5;
+            }
+
+            // Object Interaction
+            if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
+                if (!this.lever1active && this.leverBarrier.touching){// INSERT OVERLAP CHECK HERE
+                    this.lever1active = true;
+                    this.leverBarrier.play("lever");
+                    this.barrier1tick = 0;
                 }
-                else {
-                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
-                    this.jumpVFX.start();
-                    this.jumpTick = 5;
+                if (!this.lever2active && this.leverPlatform.touching){
+                    this.lever2active = true;
+                    this.leverPlatform.play("lever");
+                    this.barrier2tick = 0;
                 }
             }
             
@@ -272,7 +303,7 @@ class Platformer3 extends Phaser.Scene {
             this.scene.start("titleScene");
         });
         this.buttonContinue.on('pointerdown', () => {
-            this.scene.start("platformerScene3");
+            this.scene.start("creditsScene");
         });
     }
 
@@ -303,5 +334,40 @@ class Platformer3 extends Phaser.Scene {
         this.cameras.main.setDeadzone(50, 50);
         this.cameras.main.setZoom(this.SCALE);
         return;
+    }
+    // Function for resetting collision
+    resetCollision(){
+        this.physics.add.collider(my.sprite.player, this.groundLayer);
+        this.physics.add.collider(my.sprite.player, this.barrier2);
+        this.physics.add.collider(my.sprite.player, this.barrier1);
+        this.physics.add.collider(my.sprite.player, this.plunger, (obj1, obj2) => {
+            this.winGame();
+        });
+        this.physics.add.collider(my.sprite.player, this.cage);
+        this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
+            obj1.destroy();
+            this.lives -= 1;
+            if (this.lives > 0){
+                my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
+                my.sprite.player.setCollideWorldBounds(true);
+                this.resetCamera();
+                this.resetCollision();
+                this.resetLayers();
+            }
+        });
+        this.physics.add.overlap(my.sprite.player, this.heartGroup, (obj1, obj2) => {
+            this.lifeVFX.setX(obj2.x);
+            this.lifeVFX.setY(obj2.y);
+            this.lifeVFX.start();
+            this.lifeTick = 20;
+            this.sound.play("powerup");
+            obj2.destroy();
+            this.lives ++;
+        });
+    }
+    // Function for resetting moving layers
+    resetLayers(){
+        this.barrier1.Y = 0;
+        this.barrier2.Y = 0;
     }
 }

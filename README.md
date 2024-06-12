@@ -35,10 +35,10 @@ Rubric
 | Polish             | 5 pt: Outstanding           | 4 pt: High polish   | 2 pt: Limited polish  | 0 pt: No polish   |
 +--------------------+-----------------------------+---------------------+-----------------------+-------------------+
 |                    | 15 pt: 5 criteria, met 1-2  | 13 pt: 4 criteria,  | 10 pt: 3 criteria or  | 8 pt: 1-2 criteria|
-| Self Eval          | at top level, included a    | met 2+ at top 1-2   | no rationale for      | or no explicit    |
+| Self Eval        15| at top level, included a    | met 2+ at top 1-2   | no rationale for      | or no explicit    |
 |                    | detailed rationale          | level, gen rationale| evaluation            | criteria          |
 +--------------------+-----------------------------+---------------------+-----------------------+-------------------+
 
 Components refers to major areas of functionality - so particles, arcade physics, tile layers, pathfinding, paths, cameras, animated tiles...
 
-Current score 16/23 + self-eval
+Current score 31/38
