@@ -30,6 +30,9 @@ class Platformer2 extends Phaser.Scene {
     }
 
     create() {
+        // Get life counter defined just in case collision code needs it for definition
+        this.livesText = this.add.text(520, 50, "placeholder for definition");
+        
         // Create a new tilemap game object which uses 18x18 pixel tiles
         this.map = this.add.tilemap("platformer-level2", 18, 18, 45, 20);
         
@@ -149,6 +152,7 @@ class Platformer2 extends Phaser.Scene {
         // Acid Collision Implementation
         this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
             this.loseLife();
+            this.livesText.setText("x " + this.lives);
         });
 
         // Heart Collision Implementation
@@ -160,6 +164,7 @@ class Platformer2 extends Phaser.Scene {
             this.sound.play("powerup");
             obj2.destroy();
             this.lives ++;
+            this.livesText.setText("x " + this.lives);
         });
 
         // Level End Condition
@@ -200,6 +205,12 @@ class Platformer2 extends Phaser.Scene {
         this.noText.visible = false;
         this.clearText.visible = false;
         this.nextLevelText.visible = false;
+
+        // Create UI
+        this.interfaceBackground = this.add.sprite(0, 200, "buttonGraphic").setScale(100, 1);
+        this.interfaceBackground.setScrollFactor(0);
+        this.lifeIcon = this.add.sprite(500, 200, "spriteList", 44).setScrollFactor(0);
+        this.livesText = this.add.text(520, 195, "x " + this.lives).setScrollFactor(0);
     }
     update() {
         if (this.pause == false){

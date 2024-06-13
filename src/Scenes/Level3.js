@@ -30,6 +30,9 @@ class Platformer3 extends Phaser.Scene {
     }
 
     create() {
+        // Get life counter defined just in case collision code needs it for definition
+        this.livesText = this.add.text(520, 50, "placeholder for definition");
+
         // Create a new tilemap game object which uses 18x18 pixel tiles
         this.map = this.add.tilemap("platformer-level3", 18, 18, 45, 20);
         
@@ -151,6 +154,7 @@ class Platformer3 extends Phaser.Scene {
             obj1.destroy();
             this.lives -= 1;
             if (this.lives > 0){
+                this.livesText.setText("x " + this.lives);
                 my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
                 my.sprite.player.setCollideWorldBounds(true);
                 this.resetCamera();
@@ -167,6 +171,7 @@ class Platformer3 extends Phaser.Scene {
             this.sound.play("powerup");
             obj2.destroy();
             this.lives ++;
+            this.livesText.setText("x " + this.lives);
         });
 
         // set up Phaser-provided cursor key input
@@ -202,6 +207,12 @@ class Platformer3 extends Phaser.Scene {
         this.noText.visible = false;
         this.clearText.visible = false;
         this.nextLevelText.visible = false;
+
+        // Create UI
+        this.interfaceBackground = this.add.sprite(0, 200, "buttonGraphic").setScale(100, 1);
+        this.interfaceBackground.setScrollFactor(0);
+        this.lifeIcon = this.add.sprite(500, 200, "spriteList", 44).setScrollFactor(0);
+        this.livesText = this.add.text(520, 195, "x " + this.lives).setScrollFactor(0);
     }
     update() {
         if (this.pause == false){
