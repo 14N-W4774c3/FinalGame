@@ -185,7 +185,7 @@
  <tileset firstgid="113" name="Rock" tilewidth="18" tileheight="18" tilecount="81" columns="9">
   <image source="stone_packed.png" width="162" height="162"/>
  </tileset>
- <tileset firstgid="194" name="Natural" tilewidth="18" tileheight="18" tilecount="180" columns="20">
+ <tileset firstgid="194" name="Neutral" tilewidth="18" tileheight="18" tilecount="180" columns="20">
   <image source="tilemap_packed.png" width="360" height="162"/>
   <tile id="33">
    <animation>

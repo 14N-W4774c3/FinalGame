@@ -67,7 +67,7 @@ class Platformer extends Phaser.Scene {
             name: "killzone",
             key: "indusList",
             frame: 45
-        })
+        });
 
         // Enable object collisions
         this.physics.world.enable(this.hearts, Phaser.Physics.Arcade.STATIC_BODY);
@@ -160,13 +160,6 @@ class Platformer extends Phaser.Scene {
         cursors = this.input.keyboard.createCursorKeys();
 
         this.rKey = this.input.keyboard.addKey('R');
-
-        // debug key listener (assigned to D key)
-        // Remove in final version
-        this.input.keyboard.on('keydown-D', () => {
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
-        }, this);
 
         this.resetCamera();
 

@@ -23,10 +23,6 @@ class Platformer2 extends Phaser.Scene {
 
         // Pickup Animation Timer
         this.heartBeat = 0;
-
-        // Layer Movement Timers
-        this.platformTick = -1;
-        this.barrierTick = -1;
     }
 
     preload(){
@@ -63,12 +59,6 @@ class Platformer2 extends Phaser.Scene {
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
-        this.barrier.setCollisionByProperty({
-            collides: true
-        });
-        this.platforms.setCollisionByProperty({
-            collides: true
-        });
         this.roof.setCollisionByProperty({
             collides: true
         });
@@ -80,6 +70,11 @@ class Platformer2 extends Phaser.Scene {
             key: "indusList",
             frame: 58
         });
+        this.killZone = this.map.createFromObjects("Objects", {
+            name: "killzone",
+            key: "indusList",
+            frame: 45
+        });
 
         // Create hearts
         this.hearts = this.map.createFromObjects("Objects", {
@@ -88,23 +83,11 @@ class Platformer2 extends Phaser.Scene {
             frame: 44
         });
 
-        // Create Levers
-        this.leverPlatform = this.map.createFromObjects("Objects", {
-            name: "levertop",
-            key: "spriteList",
-            frame: 66
-        });
-        this.leverBarrier = this.map.createFromObjects("Objects", {
-            name: "levermid",
-            key: "spriteList",
-            frame: 66
-        });
-
         // Enable object collisions
         this.physics.world.enable(this.hearts, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.endPoint, Phaser.Physics.Arcade.STATIC_BODY);
-        this.physics.world.enable(this.leverPlatform, Phaser.Physics.Arcade.STATIC_BODY);
-        this.physics.world.enable(this.leverBarrier, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.killZone, Phaser.Physics.Arcade.STATIC_BODY);
+        this.killZoneGroup = this.add.group(this.killZone);
         this.heartGroup = this.add.group(this.hearts);
 
         // Particle VFX
@@ -162,9 +145,6 @@ class Platformer2 extends Phaser.Scene {
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
-        this.physics.add.collider(my.sprite.player, this.barrier);
-        this.physics.add.collider(my.sprite.player, this.platforms);
-        this.physics.add.collider(my.sprite.player, this.roof);
 
         // Acid Collision Implementation
         this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
@@ -276,32 +256,11 @@ class Platformer2 extends Phaser.Scene {
              A few seconds later, it speeds up and the roof starts dropping
              A few seconds after that, it is destroyed and the roof drops faster
              Upon the barrier lever being pulled, the barrier slowly opens
+
+             Unfortunately, I could get neither the levers nor the moving layers to play nice.
+             So all we get is this sad comment - the repository history will include my scraps.
             */
-            if (this.platformTick >= 0){
-                this.platformTick++;
-                if (this.platformTick % 10 == 0){
-                    this.platforms.Y += 3;
-                }
-                if (this.platformTick > 180 && this.platformTick % 10 == 0){
-                    this.platforms.Y += 3;
-                    this.roof.Y += 3;
-                }
-                if (this.platformTick = 360){
-                    this.platforms.destroy();
-                }
-                if (this.platformTick > 360 && this.platformTick % 10){
-                    this.roof.Y += 3;
-                }
-            }
-            if (this.barrierTick >= 0){
-                this.barrierTick++;
-                if (this.barrierTick % 5 == 0){
-                    this.barrier.X += 3;
-                }
-                if (this.barrierTick == 180){
-                    this.barrierTick = -1;
-                }
-            }
+
 
             // Player Movement
             if(cursors.left.isDown) {
@@ -341,20 +300,6 @@ class Platformer2 extends Phaser.Scene {
                 my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
                 this.jumpVFX.start();
                 this.jumpTick = 5;
-            }
-            
-            // Object Interaction
-            if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
-                if (!this.barrierLeverActive && this.leverBarrier.touching){// INSERT OVERLAP CHECK HERE
-                    this.barrierLeverActive = true;
-                    this.leverBarrier.play("lever");
-                    this.barrierTick = 0;
-                }
-                if (!this.platformLeverActive && this.leverPlatform.touching){
-                    this.platformLeverActive = true;
-                    this.leverPlatform.play("lever");
-                    this.platformTick = 0;
-                }
             }
             // Maunal Restart - REMOVE FOR FINAL VERSION
             if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
@@ -399,7 +344,6 @@ class Platformer2 extends Phaser.Scene {
         my.sprite.player.destroy();
         this.lives--;
         if (this.lives > 0){
-            this.resetLayers();
             my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
             my.sprite.player.setCollideWorldBounds(true);
             this.resetCollision();
@@ -418,9 +362,6 @@ class Platformer2 extends Phaser.Scene {
     // Function for resetting collision
     resetCollision(){
         this.physics.add.collider(my.sprite.player, this.groundLayer);
-        this.physics.add.collider(my.sprite.player, this.barrier);
-        this.physics.add.collider(my.sprite.player, this.platforms);
-        this.physics.add.collider(my.sprite.player, this.roof);
         this.physics.add.overlap(my.sprite.player, this.killZoneGroup, (obj1, obj2) => {
             this.loseLife();
         });
@@ -436,16 +377,5 @@ class Platformer2 extends Phaser.Scene {
         this.physics.add.overlap(my.sprite.player, this.endPoint, (obj1, obj2) => {
             this.winGame();
         });
-    }
-    // Function for resetting moving layers
-    resetLayers(){
-        this.roof.Y = 0;
-        this.barrier.Y = 0;
-        if (!this.platforms){
-            this.platforms = this.map.createLayer("Platforms", this.tileset, 0, 0);
-        }
-        else {
-            this.platforms.Y = 0;
-        }
     }
 }

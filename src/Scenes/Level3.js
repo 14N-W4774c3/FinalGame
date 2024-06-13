@@ -23,14 +23,6 @@ class Platformer3 extends Phaser.Scene {
 
         // Pickup Animation Timer
         this.heartBeat = 0;
-
-        // Lever Trackers
-        this.lever1active = false;
-        this.lever2active = false;
-
-        // Lever Timers
-        this.barrier1tick = -1;
-        this.barrier2tick = -1;
     }
 
     preload(){
@@ -65,12 +57,6 @@ class Platformer3 extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, game.width, game.height, true, true, true, false);
 
         // Make them collidable
-        this.barrier2.setCollisionByProperty({
-            collides: true
-        });
-        this.barrier1.setCollisionByProperty({
-            collides: true
-        });
         this.plunger.setCollisionByProperty({
             collides: true
         });
@@ -83,6 +69,24 @@ class Platformer3 extends Phaser.Scene {
 
         // Set spawn point
         this.spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
+
+        // Create objects
+        this.hearts = this.map.createFromObjects("Objects", {
+            name: "heart",
+            key: "spriteList",
+            frame: 44
+        });
+        this.killZone = this.map.createFromObjects("Objects", {
+            name: "killzone",
+            key: "indusList",
+            frame: 45
+        });
+
+        // Enable object collisions
+        this.physics.world.enable(this.hearts, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.killZone, Phaser.Physics.Arcade.STATIC_BODY);
+        this.killZoneGroup = this.add.group(this.killZone);
+        this.heartGroup = this.add.group(this.hearts);
 
         // Particle VFX
         // Walking
@@ -139,8 +143,6 @@ class Platformer3 extends Phaser.Scene {
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
-        this.physics.add.collider(my.sprite.player, this.barrier2);
-        this.physics.add.collider(my.sprite.player, this.barrier1);
         this.physics.add.collider(my.sprite.player, this.plunger, (obj1, obj2) => {
             this.winGame();
         });
@@ -153,8 +155,18 @@ class Platformer3 extends Phaser.Scene {
                 my.sprite.player.setCollideWorldBounds(true);
                 this.resetCamera();
                 this.resetCollision();
-                this.resetLayers();
             }
+        });
+
+        // Heart Collision Implementation
+        this.physics.add.overlap(my.sprite.player, this.heartGroup, (obj1, obj2) => {
+            this.lifeVFX.setX(obj2.x);
+            this.lifeVFX.setY(obj2.y);
+            this.lifeVFX.start();
+            this.lifeTick = 20;
+            this.sound.play("powerup");
+            obj2.destroy();
+            this.lives ++;
         });
 
         // set up Phaser-provided cursor key input
@@ -274,20 +286,6 @@ class Platformer3 extends Phaser.Scene {
                 this.jumpVFX.start();
                 this.jumpTick = 5;
             }
-
-            // Object Interaction
-            if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
-                if (!this.lever1active && this.leverBarrier.touching){// INSERT OVERLAP CHECK HERE
-                    this.lever1active = true;
-                    this.leverBarrier.play("lever");
-                    this.barrier1tick = 0;
-                }
-                if (!this.lever2active && this.leverPlatform.touching){
-                    this.lever2active = true;
-                    this.leverPlatform.play("lever");
-                    this.barrier2tick = 0;
-                }
-            }
             
             // Maunal Restart - REMOVE FOR FINAL VERSION
             if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
@@ -338,8 +336,6 @@ class Platformer3 extends Phaser.Scene {
     // Function for resetting collision
     resetCollision(){
         this.physics.add.collider(my.sprite.player, this.groundLayer);
-        this.physics.add.collider(my.sprite.player, this.barrier2);
-        this.physics.add.collider(my.sprite.player, this.barrier1);
         this.physics.add.collider(my.sprite.player, this.plunger, (obj1, obj2) => {
             this.winGame();
         });
@@ -352,7 +348,6 @@ class Platformer3 extends Phaser.Scene {
                 my.sprite.player.setCollideWorldBounds(true);
                 this.resetCamera();
                 this.resetCollision();
-                this.resetLayers();
             }
         });
         this.physics.add.overlap(my.sprite.player, this.heartGroup, (obj1, obj2) => {
@@ -364,10 +359,5 @@ class Platformer3 extends Phaser.Scene {
             obj2.destroy();
             this.lives ++;
         });
-    }
-    // Function for resetting moving layers
-    resetLayers(){
-        this.barrier1.Y = 0;
-        this.barrier2.Y = 0;
     }
 }

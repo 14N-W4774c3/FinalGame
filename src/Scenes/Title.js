@@ -25,10 +25,10 @@ class Title extends Phaser.Scene {
     update (){
         // Button Handlers
         this.buttonPlay.on('pointerdown', () => {
-            this.scene.start("platformerScene1")
+            this.scene.start("platformerScene1");
         });
         this.buttonCredits.on('pointerdown', () => {
-            this.scene.start("creditsScene")
+            this.scene.start("creditsScene");
         });
     }
 }
